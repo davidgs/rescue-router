@@ -1,0 +1,25 @@
+---
+name: TypeScript
+description: TypeScript conventions for this monorepo
+alwaysApply: true
+---
+
+## Rules
+
+### 1. Strict mode
+Keep `strict: true` in `tsconfig` and avoid disabling compiler checks without a short, local justification.
+
+### 2. API boundaries
+Validate HTTP inputs with Zod (see `packages/shared` and Fastify type providers). Prefer shared schemas for fields that appear in more than one place.
+
+### 3. Imports and ESM
+Use `import`/`export` only. For Node-built output (`apps/api`), local imports should use explicit `.js` extensions where required by `NodeNext` resolution.
+
+### 4. Avoid `any`
+Do not introduce `any` for new code. Use `unknown` plus narrowing, or proper generic types.
+
+### 5. Database types
+Schema changes belong in `packages/db` with a Drizzle migration. Do not hand-edit applied migration SQL after it has been shared.
+
+### 6. Env and secrets
+Never commit secrets. Load configuration from environment variables (see `.env.example`). Document new variables in README and `CHANGELOG.md`.

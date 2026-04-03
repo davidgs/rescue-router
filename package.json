@@ -1,0 +1,23 @@
+{
+  "name": "rescue-router",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter \"./apps/*\" run dev",
+    "dev:api": "pnpm --filter @rescue-router/api dev",
+    "dev:web": "pnpm --filter @rescue-router/web dev",
+    "build": "pnpm run -r build",
+    "db:generate": "pnpm --filter @rescue-router/db generate",
+    "db:migrate": "pnpm --filter @rescue-router/db migrate",
+    "db:studio": "pnpm --filter @rescue-router/db studio",
+    "demo:seed": "pnpm --filter @rescue-router/api demo:seed",
+    "lint": "pnpm run -r lint",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "vitest": "3.2.4"
+  },
+  "packageManager": "pnpm@10.28.2"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@rescue-router/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "echo \"no lint yet\""
+  },
+  "dependencies": {
+    "@rescue-router/shared": "workspace:*",
+    "@tanstack/react-query": "^5.69.0",
+    "@tanstack/react-router": "^1.114.25",
+    "better-auth": "^1.2.6",
+    "leaflet": "^1.9.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.14",
+    "@tanstack/router-devtools": "^1.114.25",
+    "@types/leaflet": "^1.9.21",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.14",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2"
+  }
+}

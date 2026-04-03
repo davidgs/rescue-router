@@ -1,0 +1,22 @@
+node_modules
+dist
+.turbo
+.env
+.env.local
+*.log
+.DS_Store
+coverage
+
+# IDE / local tooling
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+.idea/
+*.swp
+*.tsbuildinfo
+
+# Local pnpm store if created inside the repo (use global store instead)
+.pnpm-store/
+
+# Vite
+.vite/
