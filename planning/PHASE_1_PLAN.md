@@ -17,7 +17,7 @@ This file is the **saved Phase 1 implementation plan** (first revision of the de
 
 ## Baseline architecture (all phases)
 
-Lock in a **pnpm monorepo** (or npm workspaces if you prefer one less tool) so `web`, `api`, and shared `packages/` can share TypeScript types and Zod schemas.
+Lock in a **Yarn workspaces monorepo** so `web`, `api`, and shared `packages/` can share TypeScript types and Zod schemas.
 
 ```mermaid
 flowchart LR
@@ -62,7 +62,7 @@ flowchart LR
 
 ## Global dependencies (install per app/package)
 
-**Root:** `typescript`, `eslint`, `prettier`, `pnpm` workspace config.
+**Root:** `typescript`, `eslint`, `prettier`, Yarn workspace config.
 
 **`apps/web`:** `react`, `react-dom`, `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/react-query`, `tailwindcss`, `postcss`, `autoprefixer`, `zod` (if validating forms client-side from shared).
 
@@ -106,7 +106,7 @@ flowchart LR
 
 **Infra:**
 
-- `docker-compose.yml`: **postgres** service, optional **mailpit** (ports 1025/8025), **api** optional after Dockerfile exists (can be `pnpm dev` on host in earliest week).
+- `docker-compose.yml`: **postgres** service, optional **mailpit** (ports 1025/8025), **api** optional after Dockerfile exists (can be `yarn dev` on host in earliest week).
 - `GET /healthz` on API (no DB) and `GET /readyz` (DB ping).
 
 **Exit criteria:** Two users, two orgs, API tests or manual script proving no cross-org reads on at least one protected endpoint.

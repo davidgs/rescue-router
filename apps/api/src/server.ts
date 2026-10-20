@@ -77,6 +77,28 @@ const dogIdParam = orgIdParam.extend({
   dogId: z.string().uuid(),
 });
 
+const poiCache = new Map<
+  string,
+  {
+    expiresAt: number;
+    rows: Array<{
+      id: string;
+      lat: number;
+      lon: number;
+      amenity: string;
+      name: string | null;
+    }>;
+  }
+>();
+
+const geocodeCache = new Map<
+  string,
+  {
+    expiresAt: number;
+    value: { lat: number; lon: number; label: string };
+  }
+>();
+
 async function main() {
   const app = Fastify({
     logger: {
@@ -89,6 +111,10 @@ async function main() {
           : undefined,
     },
   }).withTypeProvider<ZodTypeProvider>();
+  app.log.info(
+    { dbTarget: process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).host : "missing" },
+    "API boot environment",
+  );
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
@@ -170,7 +196,7 @@ async function main() {
           );
           return reply.status(503).send({
             error:
-              "Demo session could not be started. Run pnpm demo:seed and set DEMO_GUEST_PASSWORD if you use a non-default password.",
+              "Demo session could not be started. Run yarn demo:seed and set DEMO_GUEST_PASSWORD if you use a non-default password.",
           });
         }
         return forwardAuthResponse(reply, response);
@@ -886,6 +912,13 @@ async function main() {
           .send({ error: "Use either q or lat/lon, not both" });
       }
       try {
+        const cacheKey = hasLatLon
+          ? `r:${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`
+          : `q:${q!.trim().toLowerCase()}`;
+        const cached = geocodeCache.get(cacheKey);
+        if (cached && cached.expiresAt > Date.now()) {
+          return cached.value;
+        }
         if (hasLatLon) {
           const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}`;
           const res = await fetch(url, {
@@ -896,6 +929,7 @@ async function main() {
           });
           if (!res.ok) {
             app.log.warn({ status: res.status }, "Reverse geocode upstream error");
+            if (res.status === 429 && cached) return cached.value;
             return reply.status(502).send({ error: "Geocoding service error" });
           }
           const data = (await res.json()) as {
@@ -914,11 +948,16 @@ async function main() {
           if (!Number.isFinite(plat) || !Number.isFinite(plon)) {
             return reply.status(404).send({ error: "Location not found" });
           }
-          return {
+          const value = {
             lat: plat,
             lon: plon,
             label: data.display_name,
           };
+          geocodeCache.set(cacheKey, {
+            expiresAt: Date.now() + 1000 * 60 * 60 * 24,
+            value,
+          });
+          return value;
         }
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q!)}&limit=1`;
         const res = await fetch(url, {
@@ -929,6 +968,7 @@ async function main() {
         });
         if (!res.ok) {
           app.log.warn({ status: res.status }, "Geocode upstream error");
+          if (res.status === 429 && cached) return cached.value;
           return reply.status(502).send({ error: "Geocoding service error" });
         }
         const data = (await res.json()) as {
@@ -938,14 +978,195 @@ async function main() {
         }[];
         const hit = data[0];
         if (!hit) return reply.status(404).send({ error: "Location not found" });
-        return {
+        const value = {
           lat: Number.parseFloat(hit.lat),
           lon: Number.parseFloat(hit.lon),
           label: hit.display_name,
         };
+        geocodeCache.set(cacheKey, {
+          expiresAt: Date.now() + 1000 * 60 * 60 * 24,
+          value,
+        });
+        return value;
       } catch (e) {
         app.log.error(e);
         return reply.status(502).send({ error: "Geocoding failed" });
+      }
+    },
+  );
+
+  app.get(
+    "/api/route",
+    {
+      schema: {
+        querystring: z.object({
+          startLat: z.coerce.number().finite().gte(-90).lte(90),
+          startLon: z.coerce.number().finite().gte(-180).lte(180),
+          endLat: z.coerce.number().finite().gte(-90).lte(90),
+          endLon: z.coerce.number().finite().gte(-180).lte(180),
+        }),
+      },
+      preHandler:
+        typeof app.rateLimit === "function"
+          ? app.rateLimit({ max: 60, timeWindow: "1 minute" })
+          : async () => {},
+    },
+    async (request, reply) => {
+      const u = await requireUser(request, reply);
+      if (!u) return;
+      const { startLat, startLon, endLat, endLon } = request.query;
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${encodeURIComponent(String(startLon))},${encodeURIComponent(String(startLat))};${encodeURIComponent(String(endLon))},${encodeURIComponent(String(endLat))}?overview=full&geometries=geojson`;
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) {
+          app.log.warn({ status: res.status }, "Route upstream error");
+          return reply.status(502).send({ error: "Routing service error" });
+        }
+        const data = (await res.json()) as {
+          code?: string;
+          routes?: Array<{
+            distance: number;
+            duration: number;
+            geometry?: { coordinates?: [number, number][] };
+          }>;
+        };
+        const route = data.routes?.[0];
+        const coords = route?.geometry?.coordinates ?? [];
+        if (!route || coords.length < 2) {
+          return reply.status(404).send({ error: "Route not found" });
+        }
+        return {
+          distanceMeters: route.distance,
+          durationSeconds: route.duration,
+          points: coords.map(([lon, lat]) => ({ lat, lon })),
+        };
+      } catch (e) {
+        app.log.error(e);
+        return reply.status(502).send({ error: "Routing failed" });
+      }
+    },
+  );
+
+  app.get(
+    "/api/pois",
+    {
+      schema: {
+        querystring: z.object({
+          minLat: z.coerce.number().finite().gte(-90).lte(90),
+          minLng: z.coerce.number().finite().gte(-180).lte(180),
+          maxLat: z.coerce.number().finite().gte(-90).lte(90),
+          maxLng: z.coerce.number().finite().gte(-180).lte(180),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const u = await requireUser(request, reply);
+      if (!u) return;
+      const { minLat, minLng, maxLat, maxLng } = request.query;
+      if (minLat >= maxLat || minLng >= maxLng) {
+        return reply.status(400).send({ error: "Invalid map bounds" });
+      }
+      try {
+        const cacheKey = [
+          minLat.toFixed(3),
+          minLng.toFixed(3),
+          maxLat.toFixed(3),
+          maxLng.toFixed(3),
+        ].join(",");
+        const cached = poiCache.get(cacheKey);
+        if (cached && cached.expiresAt > Date.now()) {
+          return cached.rows;
+        }
+        const viewbox = `${minLng},${maxLat},${maxLng},${minLat}`;
+        const poiQueries: Array<{ key: string; q: string }> = [
+          { key: "fuel", q: "gas station" },
+          { key: "restaurant", q: "restaurant" },
+          { key: "cafe", q: "cafe" },
+          { key: "supermarket", q: "supermarket" },
+          { key: "pharmacy", q: "pharmacy" },
+          { key: "hospital", q: "hospital urgent care" },
+        ];
+        const results: Array<
+          Array<{
+            id: string;
+            lat: number;
+            lon: number;
+            amenity: string;
+            name: string | null;
+          }>
+        > = [];
+        for (const { key, q } of poiQueries) {
+            const url =
+              `https://nominatim.openstreetmap.org/search?format=jsonv2` +
+              `&bounded=1&viewbox=${encodeURIComponent(viewbox)}` +
+              `&limit=8&q=${encodeURIComponent(q)}`;
+            const res = await fetch(url, {
+              headers: {
+                "User-Agent": nominatimUserAgent,
+                Accept: "application/json",
+              },
+            });
+            if (!res.ok) {
+              app.log.warn({ status: res.status, q }, "POI upstream error");
+              if (res.status === 429) break;
+              results.push([]);
+              continue;
+            }
+            const data = (await res.json()) as Array<{
+              place_id?: number;
+              lat: string;
+              lon: string;
+              display_name?: string;
+              name?: string;
+            }>;
+            const rows = data
+              .map((r) => {
+                const lat = Number.parseFloat(r.lat);
+                const lon = Number.parseFloat(r.lon);
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+                return {
+                  id: `${key}:${r.place_id ?? `${lat.toFixed(5)},${lon.toFixed(5)}`}`,
+                  lat,
+                  lon,
+                  amenity: key,
+                  name: r.name ?? r.display_name?.split(",")[0] ?? null,
+                };
+              })
+              .filter(
+                (
+                  row,
+                ): row is {
+                  id: string;
+                  lat: number;
+                  lon: number;
+                  amenity: string;
+                  name: string | null;
+                } => !!row,
+              );
+            results.push(rows);
+        }
+
+        const dedup = new Map<
+          string,
+          { id: string; lat: number; lon: number; amenity: string; name: string | null }
+        >();
+        for (const group of results) {
+          for (const r of group) {
+            const key = `${r.lat.toFixed(5)}:${r.lon.toFixed(5)}:${(r.name ?? "").toLowerCase()}`;
+            if (!dedup.has(key)) dedup.set(key, r);
+          }
+        }
+        const rows = [...dedup.values()];
+        poiCache.set(cacheKey, {
+          expiresAt: Date.now() + 1000 * 60 * 5,
+          rows,
+        });
+        return rows;
+      } catch (e) {
+        app.log.error(e);
+        return reply.status(502).send({ error: "POI lookup failed" });
       }
     },
   );

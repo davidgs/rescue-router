@@ -59,12 +59,14 @@ function RootLayout() {
             aria-label="Rescue Router home"
             className="group flex w-fit max-w-full items-center gap-3 rounded-xl outline-offset-4 focus-visible:outline focus-visible:outline-3 focus-visible:outline-[var(--rr-focus-ring)]"
           >
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-800 text-xs font-bold tracking-tight text-white shadow-lg shadow-black/25"
-              aria-hidden
-            >
-              RR
-            </span>
+            <img
+              src="/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 shrink-0 rounded-xl object-contain shadow-lg shadow-black/20 ring-1 ring-black/5 dark:ring-white/10"
+              decoding="async"
+            />
             <span className="rr-display text-lg font-semibold tracking-tight text-[var(--rr-header-text)]">
               Rescue Router
             </span>
@@ -1298,7 +1300,12 @@ function TransportDetailPage() {
         <h2 className="mb-3 rr-display text-lg font-semibold rr-ink">
           Route map
         </h2>
-        <TransportRouteMap legs={legsSorted} />
+        <TransportRouteMap
+          legs={legsSorted}
+          orgId={orgId!}
+          transportId={transportId!}
+          canManage={canManage}
+        />
       </section>
 
       <div className="grid gap-8 lg:grid-cols-3">

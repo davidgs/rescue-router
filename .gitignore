@@ -1,22 +1,54 @@
-node_modules
-dist
-.turbo
-.env
-.env.local
-*.log
-.DS_Store
-coverage
+# Dependencies
+node_modules/
 
-# IDE / local tooling
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Environment (keep tracked examples)
+.env
+.env.*
+!.env.example
+
+# Logs and debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Caches
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+.eslintcache
+*.tmp
+*.temp
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# IDE / editors
+.idea/
+*.swp
+*.swo
+*~
+
+# Cursor — ignore local agent state; keep shared rules
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
-.idea/
-*.swp
-*.tsbuildinfo
 
-# Local pnpm store if created inside the repo (use global store instead)
-.pnpm-store/
-
-# Vite
-.vite/
+# Optional local overrides (uncomment if you add these files)
+# docker-compose.override.yml

@@ -10,7 +10,7 @@
     "lint": "echo \"no lint yet\""
   },
   "dependencies": {
-    "@rescue-router/shared": "workspace:*",
+    "@rescue-router/shared": "*",
     "@tanstack/react-query": "^5.69.0",
     "@tanstack/react-router": "^1.114.25",
     "better-auth": "^1.2.6",

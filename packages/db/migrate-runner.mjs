@@ -1,9 +1,7 @@
 import { config } from "dotenv";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-config({ path: path.join(here, "..", ".env") });
+config({ path: path.join(here, "..", "..", ".env"), override: true });
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import path from "node:path";
@@ -16,6 +14,10 @@ if (!url) {
   console.error("DATABASE_URL is required");
   process.exit(1);
 }
+const parsed = new URL(url);
+console.log(
+  `[db:migrate] DATABASE_URL target: ${parsed.hostname}:${parsed.port || "5432"}${parsed.pathname}`,
+);
 
 const sql = postgres(url, { max: 1 });
 const db = drizzle(sql);

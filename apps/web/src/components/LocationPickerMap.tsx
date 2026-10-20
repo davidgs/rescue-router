@@ -78,11 +78,14 @@ export function LocationPickerMap({
     const zoom = hasInitial ? 16 : 6;
 
     const map = L.map(el, { scrollWheelZoom: true }).setView([lat0, lng0], zoom);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(map);
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution:
+          'Tiles &copy; Esri — Source: Esri, TomTom, Garmin, FAO, NOAA, USGS',
+        maxZoom: 19,
+      },
+    ).addTo(map);
     mapRef.current = map;
 
     const applyPick = (lat: number, lng: number, label: string) => {
@@ -196,7 +199,8 @@ export function LocationPickerMap({
           role="presentation"
         />
         <p className="text-[11px] rr-ink-subtle">
-          © OpenStreetMap — reverse geocoding via Nominatim.
+          Basemap tiles © Esri (street/POI style) — reverse geocoding via
+          Nominatim.
         </p>
       </div>
     </div>

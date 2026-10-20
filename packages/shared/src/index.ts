@@ -120,11 +120,11 @@ export const reorderLegsSchema = z.object({
   legIds: z.array(z.string().uuid()),
 });
 
-/** Pre-seeded demo data (see `pnpm demo:seed`). Safe for local development only. */
+/** Pre-seeded demo data (see `yarn demo:seed`). Safe for local development only. */
 export const demoSeed = {
   orgName: "Demo County Animal Rescue",
   orgSlug: "demo-rescue",
-  password: "demo-demo-demo",
+  password: "Rescue17.Mime!",
   coordinatorEmail: "coordinator+demo@example.com",
   coordinatorName: "Alex Coordinator",
   driverEmail: "driver+demo@example.com",

@@ -17,7 +17,7 @@ We aim to acknowledge reports within a few business days.
 
 ## Demo / seed endpoints
 
-`pnpm demo:seed` must only be run in trusted local or staging environments. Never set **`ALLOW_DEMO_SEED`** or **`DEMO_MODE`** in production; they allow inserting shared demo users and sample transport data.
+`yarn demo:seed` must only be run in trusted local or staging environments. Never set **`ALLOW_DEMO_SEED`** or **`DEMO_MODE`** in production; they allow inserting shared demo users and sample transport data.
 
 **`POST /api/demo/enter`** signs the browser into the shared demo **coordinator** (see `demoReadOnlyViewerEmail` in `@rescue-router/shared`) using **`DEMO_GUEST_PASSWORD`**. It is **allowed when `NODE_ENV` is not `production`** unless you set **`DEMO_ENTER_ENABLED=false`**. In **production**, demo entry is **off** until you set **`DEMO_ENTER_ENABLED=true`** (explicit opt-in). If you expose this on the public internet, use a **long random `DEMO_GUEST_PASSWORD`**, keep **`AUTH_SECRET`** and database credentials private, and expect shared-account abuse.
 
@@ -26,6 +26,8 @@ We aim to acknowledge reports within a few business days.
 **Important:** Production deployments should always set **`NODE_ENV=production`**. If you forget, demo entry could be left on when `DEMO_ENTER_ENABLED` is unset.
 
 **Geocoding:** Authenticated **`GET /api/geocode`** proxies **forward** search (`q=`) and **reverse** lookup (`lat=` + `lon=`) to [Nominatim](https://nominatim.org/) (OpenStreetMap). Set **`NOMINATIM_USER_AGENT`** to identify your deployment per their [usage policy](https://operations.osmfoundation.org/policies/nominatim/).
+
+**Google Maps key:** the web map uses **`VITE_GOOGLE_MAPS_API_KEY`** in the browser. Treat it as sensitive operational config (do not commit real keys); restrict by HTTP referrer/domain in Google Cloud and rotate if exposed.
 
 ## Secure configuration
 

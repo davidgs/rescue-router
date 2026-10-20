@@ -7,10 +7,11 @@ Thank you for helping improve Rescue Router.
 1. **Clone** the repository and install dependencies:
 
    ```bash
-   pnpm install
+   yarn install
    ```
 
 2. **Environment**: copy [`.env.example`](.env.example) to `.env` and adjust values.
+   - Include `VITE_GOOGLE_MAPS_API_KEY` for map rendering in the web app.
 
 3. **Databases**: start Postgres and Mailpit:
 
@@ -21,14 +22,14 @@ Thank you for helping improve Rescue Router.
 4. **Migrations**:
 
    ```bash
-   pnpm db:migrate
+   yarn db:migrate
    ```
 
-5. **Run** the stack: `pnpm dev` (API + web), then open [http://localhost:5173](http://localhost:5173).
+5. **Run** the stack: `yarn dev` (API + web), then open [http://localhost:5173](http://localhost:5173).
 
 ## Project layout
 
-- [`apps/web`](apps/web) — React SPA.
+- [`apps/web`](apps/web) — React SPA; static files (favicon, **`public/logo.png`**, etc.) in [`apps/web/public`](apps/web/public).
 - [`apps/api`](apps/api) — HTTP API and Better Auth.
 - [`packages/db`](packages/db) — Drizzle schema and SQL migrations.
 - [`packages/shared`](packages/shared) — Zod schemas and shared types.
@@ -37,7 +38,7 @@ Thank you for helping improve Rescue Router.
 
 - Prefer **small, focused** changes with a clear commit message.
 - Update **[`CHANGELOG.md`](CHANGELOG.md)** under `[Unreleased]` for user-visible or operational changes.
-- Run **`pnpm test`** before opening a PR.
+- Run **`yarn test`** before opening a PR.
 - Follow **[`.cursor/rules/typescript.mdc`](.cursor/rules/typescript.mdc)** for TypeScript conventions.
 
 ## Tests
@@ -45,7 +46,7 @@ Thank you for helping improve Rescue Router.
 See **[`TEST_SUITE_SUMMARY.md`](TEST_SUITE_SUMMARY.md)** for what is covered. From the repository root:
 
 ```bash
-pnpm test
+yarn test
 ```
 
 ## Demo data
@@ -53,10 +54,10 @@ pnpm test
 With `ALLOW_DEMO_SEED=true` in `.env`, you can load sample users and a transport:
 
 ```bash
-pnpm demo:seed
+yarn demo:seed
 ```
 
-Use **`pnpm demo:seed -- --force`** to drop the demo organization and run a fresh seed (see [README.md](README.md)).
+Use **`yarn demo:seed -- --force`** to drop the demo organization and run a fresh seed (see [README.md](README.md)).
 
 ## Security
 

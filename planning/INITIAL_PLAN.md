@@ -2,7 +2,13 @@
 
 ## 1. Problem and vision
 
-Many dog rescues run **relay transports**: multiple **legs**, each driven by a volunteer for about one to two hours, then a **handoff** to the next driver. Coordinators need to plan routes, assign people, and execute the day with clear contact and animal information.
+Many dog rescues run **relay transports**: multiple **legs**, each driven by a volunteer for about one to two hours, then a **handoff** to the next driver. Coordinators need to plan routes, assign people, and execute the day with clear contact and animal information. Each driver must be given an exact clear pick-up and drop-off (exchange) location and the coordinator must be able to se the entire transport and progress along the route. The coordinator should be able to easily email/text each driver with their pick-up/drop-off location as well as clear turn-by-turn directions for their leg of the route.
+
+The coordinator should be able to send invites to new members, and they should be able to access a simple form from that invite to sign up and enter their information including address, email address, phone number, car make and model, and license plate number.
+
+The owner oof the overall app should be able to send invites to new rescue organizations so that the organization owner can fill out a simple form for information about the organization, and invite rescue coordinators to the org (who can then invite drivers, etc.)
+
+Coordinators should have a simple form to add new dogs needing transport that includes dog's name, breed, size, weight, sex, whether the dog is spayed/neutered, current location, and destination.
 
 **Goal:** A practical, easy-to-use app that supports **planning and execution** of these transports and volunteer drivers, with **multi-tenancy** so each rescue group has its own isolated **organization account**.
 
@@ -15,7 +21,7 @@ Many dog rescues run **relay transports**: multiple **legs**, each driven by a v
 - **Transport**: origin, destination, date/time window, dog(s), special needs (crate, meds, behavior notes).
 - **Legs**: ordered segments with start/end location, distance/duration estimates, assigned driver (or open slot), planned pickup/handoff times.
 - **Volunteers / drivers**: contact info, optional home base or service area, max leg length, vehicle capacity, blackout dates.
-- **Routing**: Start with **manual legs** and map links; optional later: suggestions or optimization along a corridor with human approval.
+- **Routing**: Start with **manual legs** and map links; optional later: suggestions or optimization along a corridor with human approval. Legs should be specific along major highways, etc. Coordinator should be able to search near each proposed transfer point to find a suitable location (typically gas stations, restaurant parking lots, hotel/motel parking lots, etc.)
 
 ### Execution
 
