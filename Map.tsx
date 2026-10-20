@@ -51,7 +51,7 @@ export default function Map({
 }) {
   /** Load the Google Maps library * */
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
+    googleMapsApiKey: 'XXXXX',
     libraries: gLibraries,
   });
 
